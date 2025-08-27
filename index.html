@@ -3,15 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Hacker Typer Clone</title>
+<title>Chronos Dev Shell</title>
 <style>
-  /* Terminal style */
   body {
     background-color: black;
     color: #00FF00;
     font-family: 'Courier New', Courier, monospace;
     margin: 0;
-    padding: 20px;
+    padding: 10px;
     overflow: hidden;
   }
   #terminal {
@@ -20,64 +19,50 @@
     margin: 0 auto;
     background: black;
     border: 2px solid #00ff00;
-    padding: 15px;
+    padding: 10px;
     overflow-y: auto;
     white-space: pre-wrap;
     font-size: 16px;
-    line-height: 1.2;
-    position: relative;
-  }
-  #terminal:focus {
+    line-height: 1.3;
     outline: none;
   }
-  /* Blinking cursor */
+  .line {
+    display: block;
+    margin-bottom: 2px;
+  }
+  .prompt {
+    color: #00ff00;
+    user-select: none;
+  }
+  #inputLine {
+    display: inline;
+  }
   #cursor {
     display: inline-block;
-    width: 10px;
-    background-color: #00FF00;
+    width: 9px;
+    height: 18px;
+    background: #00ff00;
     margin-left: 2px;
     animation: blink 1s steps(2, start) infinite;
     vertical-align: bottom;
-    height: 18px;
   }
   @keyframes blink {
     0%, 50% { opacity: 1; }
     51%, 100% { opacity: 0; }
   }
-  /* Pop-up messages */
-  #popup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: black;
-    color: red;
-    font-weight: bold;
-    padding: 20px 40px;
-    border: 3px solid red;
-    font-size: 28px;
-    text-align: center;
-    box-shadow: 0 0 15px red;
-    display: none;
-    z-index: 1000;
-    user-select: none;
-  }
-  /* Scrollbar styling */
-  #terminal::-webkit-scrollbar {
-    width: 10px;
-  }
-  #terminal::-webkit-scrollbar-thumb {
-    background-color: #00ff00;
-  }
 </style>
 </head>
 <body>
-  <div id="terminal" tabindex="0"></div>
-  <div id="cursor"></div>
-  <div id="popup"></div>
+  <div id="terminal" tabindex="0" aria-label="Terminal window" role="textbox" aria-multiline="true" spellcheck="false">
+    <div class="line"><span class="prompt">Chronos_>&nbsp;</span><span id="inputLine"></span><span id="cursor"></span></div>
+  </div>
 
 <script>
-  // Multiple code snippets to simulate hacking code
+  const terminal = document.getElementById('terminal');
+  const inputLine = document.getElementById('inputLine');
+  const cursor = document.getElementById('cursor');
+
+  // Code snippets to simulate typing
   const codeSnippets = [
     `#include <stdio.h>\nint main() {\n  printf("Hacking started...");\n  return 0;\n}\n// Connecting to server...\nSocket opened.\n`,
     `function hack() {\n  for(let i=0; i<1000000; i++) {\n    let code = "ACCESS GRANTED";\n  }\n}\nhack();\n// Accessing database...\n`,
@@ -86,85 +71,117 @@
     `SELECT * FROM users WHERE password = '123456';\nDROP TABLE secure;\n-- Executing SQL Injection...\nSuccess.\n`
   ];
 
-  const terminal = document.getElementById('terminal');
-  const popup = document.getElementById('popup');
-  const cursor = document.getElementById('cursor');
-
-  let currentText = '';
   let snippetIndex = 0;
   let charIndex = 0;
+  let normalTyping = true;
+  const charsPerKey = 10; // normal speed multiplier
+  let fastAutoTyping = false;
+  let autoTypingInterval = null;
 
-  // To simulate typing 50x faster, output multiple chars per key press
-  const charsPerKey = 10;
+  // Command buffer for user input
+  let commandBuffer = '';
 
-  // Show popup message for 2 seconds
-  function showPopup(message, color) {
-    popup.textContent = message;
-    popup.style.color = color;
-    popup.style.borderColor = color;
-    popup.style.boxShadow = `0 0 15px ${color}`;
-    popup.style.display = 'block';
-    setTimeout(() => {
-      popup.style.display = 'none';
-      terminal.focus();
-    }, 2000);
+  // Focus the terminal to capture keystrokes
+  terminal.focus();
+
+  // Scroll terminal to bottom helper
+  function scrollBottom() {
+    terminal.scrollTop = terminal.scrollHeight;
   }
 
-  // Append characters from current snippet
-  function typeChars() {
-    if(charIndex < codeSnippets[snippetIndex].length) {
-      let nextChunk = codeSnippets[snippetIndex].substr(charIndex, charsPerKey);
-      currentText += nextChunk;
-      terminal.textContent = currentText;
-      // Append cursor visually
-      terminal.appendChild(cursor);
-      charIndex += charsPerKey;
-      terminal.scrollTop = terminal.scrollHeight;
-    } else {
-      // Move to next snippet cyclically
+  // Append a new line with prompt and optional text
+  function appendLine(text = '') {
+    const line = document.createElement('div');
+    line.className = 'line';
+    line.innerHTML = `<span class="prompt">Chronos_>&nbsp;</span>${text}`;
+    terminal.appendChild(line);
+    scrollBottom();
+  }
+
+  // Type text characters at given speed into terminal lines (called during auto spam)
+  function typeTextFast(text, callback) {
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < text.length) {
+        appendLine(text.substring(0, i+1));
+        i++;
+      } else {
+        clearInterval(interval);
+        if(callback) callback();
+      }
+    }, 10); // 10 ms per character (very fast)
+  }
+
+  // Function to spam thousands of lines fast
+  function startAutoSpam() {
+    let linesTyped = 0;
+    fastAutoTyping = true;
+    autoTypingInterval = setInterval(() => {
+      const snippet = codeSnippets[snippetIndex];
+      appendLine(snippet.substring(0, 60 + Math.floor(Math.random()*60))); // random length snippet
       snippetIndex = (snippetIndex + 1) % codeSnippets.length;
-      charIndex = 0;
+      linesTyped++;
+      if (linesTyped > 1000) {
+        // Stop after 1000 lines
+        clearInterval(autoTypingInterval);
+        fastAutoTyping = false;
+        appendLine("Auto spam finished. Press any key.");
+      }
+      scrollBottom();
+    }, 10); // 10 ms per line - super fast
+  }
+
+  // Simulate install command output
+  function simulateInstall() {
+    appendLine("Installing hackertyper as Chronos file...");
+    setTimeout(() => appendLine("Creating Chronos directory..."), 1000);
+    setTimeout(() => appendLine("Downloading hackertyper package..."), 2000);
+    setTimeout(() => appendLine("Extracting files..."), 3000);
+    setTimeout(() => appendLine("Installation complete! You can now run 'hackertyper'."), 4000);
+  }
+
+  // Handle user typing normal text before enter
+  function handleNormalTyping(key) {
+    if (key === 'Backspace') {
+      commandBuffer = commandBuffer.slice(0, -1);
+      inputLine.textContent = commandBuffer;
+    } else if (key.length === 1) {
+      commandBuffer += key;
+      inputLine.textContent = commandBuffer;
     }
   }
 
-  // Keyboard handler
-  terminal.addEventListener('keydown', e => {
+  // Execute command on Enter pressed
+  function handleCommand(command) {
+    appendLine(`<span class="userCommand">${command}</span>`);
+    commandBuffer = '';
+    inputLine.textContent = '';
+
+    if (command.toLowerCase() === 'start') {
+      startAutoSpam();
+    } else if (command.toLowerCase() === 'install') {
+      simulateInstall();
+    } else {
+      appendLine("Command not found: " + command);
+    }
+  }
+
+  // On keydown events
+  terminal.addEventListener('keydown', (e) => {
     e.preventDefault();
 
-    // On three Alt presses in a row, show access popup
-    if(e.key === 'Alt') {
-      altPressCount++;
-      if(altPressCount >= 3) {
-        altPressCount = 0;
-        if(Math.random() < 0.5) {
-          showPopup('ACCESS GRANTED', '#00ff00');
-        } else {
-          showPopup('ACCESS DENIED', '#ff0000');
-        }
-      }
-      return;
-    }
-    // Escape closes popup immediately
-    if(e.key === 'Escape') {
-      popup.style.display = 'none';
+    if (fastAutoTyping) {
+      // If auto spam running, ignore typing
       return;
     }
 
-    // Reset Alt presses count for other keys
-    altPressCount = 0;
+    if (e.key === 'Enter') {
+      handleCommand(commandBuffer.trim());
+    } else {
+      handleNormalTyping(e.key);
+    }
 
-    // Type multiple chars for fast typing effect
-    typeChars();
-  });
-
-  // Initial focus and blinking cursor append
-  terminal.focus();
-  let altPressCount = 0;
-
-  // Keep cursor position after content changes
-  // When window resizes also keep scroll to bottom
-  window.addEventListener('resize', () => {
-    terminal.scrollTop = terminal.scrollHeight;
+    scrollBottom();
   });
 
 </script>
