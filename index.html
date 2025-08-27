@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Chronos Dev Shell</title>
+<title>Chronos Hacker Typer Enhanced</title>
 <style>
   body {
     background-color: black;
@@ -50,6 +50,9 @@
     0%, 50% { opacity: 1; }
     51%, 100% { opacity: 0; }
   }
+  .userCommand {
+    color: #66ff66;
+  }
 </style>
 </head>
 <body>
@@ -59,10 +62,9 @@
 
 <script>
   const terminal = document.getElementById('terminal');
-  const inputLine = document.getElementById('inputLine');
+  let inputLine = document.getElementById('inputLine');
   const cursor = document.getElementById('cursor');
 
-  // Code snippets to simulate typing
   const codeSnippets = [
     `#include <stdio.h>\nint main() {\n  printf("Hacking started...");\n  return 0;\n}\n// Connecting to server...\nSocket opened.\n`,
     `function hack() {\n  for(let i=0; i<1000000; i++) {\n    let code = "ACCESS GRANTED";\n  }\n}\nhack();\n// Accessing database...\n`,
@@ -73,23 +75,21 @@
 
   let snippetIndex = 0;
   let charIndex = 0;
-  let normalTyping = true;
-  const charsPerKey = 10; // normal speed multiplier
-  let fastAutoTyping = false;
-  let autoTypingInterval = null;
-
-  // Command buffer for user input
   let commandBuffer = '';
+  let fastMode = false;  // npm start mode flag
+  let autoSpamActive = false;
+  let autoSpamInterval = null;
+  let autoSpamSpeed = 10;
 
-  // Focus the terminal to capture keystrokes
+  const normalCharsPerKey = 10;
+  const fastCharsPerKey = 50;
+
   terminal.focus();
 
-  // Scroll terminal to bottom helper
   function scrollBottom() {
     terminal.scrollTop = terminal.scrollHeight;
   }
 
-  // Append a new line with prompt and optional text
   function appendLine(text = '') {
     const line = document.createElement('div');
     line.className = 'line';
@@ -98,92 +98,254 @@
     scrollBottom();
   }
 
-  // Type text characters at given speed into terminal lines (called during auto spam)
-  function typeTextFast(text, callback) {
-    let i = 0;
-    const interval = setInterval(() => {
-      if (i < text.length) {
-        appendLine(text.substring(0, i+1));
-        i++;
-      } else {
-        clearInterval(interval);
-        if(callback) callback();
-      }
-    }, 10); // 10 ms per character (very fast)
+  function resetInputLine() {
+    inputLine.textContent = '';
+    commandBuffer = '';
   }
 
-  // Function to spam thousands of lines fast
-  function startAutoSpam() {
+  function setNewInputLine() {
+    // Remove old input line, add new blank prompt line
+    if (inputLine.parentNode) {
+      inputLine.parentNode.remove();
+    }
+    const newLine = document.createElement('div');
+    newLine.className = 'line';
+    newLine.innerHTML = '<span class="prompt">Chronos_>&nbsp;</span><span id="inputLine"></span><span id="cursor"></span>';
+    terminal.appendChild(newLine);
+    scrollBottom();
+    inputLine = document.getElementById('inputLine');
+    // cursor already exists, reappend it to new line
+    newLine.appendChild(cursor);
+  }
+
+  function typeCodeChars() {
+    const text = codeSnippets[snippetIndex];
+    const charsPerKey = fastMode ? fastCharsPerKey : normalCharsPerKey;
+
+    if (charIndex < text.length) {
+      const chunk = text.substr(charIndex, charsPerKey);
+      if (inputLine.textContent.length + chunk.length < 80) {
+        inputLine.textContent += chunk;
+      } else {
+        appendLine(inputLine.textContent);
+        setNewInputLine();
+        inputLine.textContent += chunk;
+      }
+      charIndex += chunk.length;
+      scrollBottom();
+    } else {
+      appendLine(inputLine.textContent);
+      setNewInputLine();
+      charIndex = 0;
+      snippetIndex = (snippetIndex + 1) % codeSnippets.length;
+    }
+  }
+
+  function startAutoSpam(speed = 10) {
+    if (autoSpamActive) return;
+    autoSpamActive = true;
+    autoSpamSpeed = speed;
     let linesTyped = 0;
-    fastAutoTyping = true;
-    autoTypingInterval = setInterval(() => {
+    appendLine(`Starting auto spam with speed: ${speed}ms per line...`);
+    setNewInputLine();
+    autoSpamInterval = setInterval(() => {
       const snippet = codeSnippets[snippetIndex];
-      appendLine(snippet.substring(0, 60 + Math.floor(Math.random()*60))); // random length snippet
+      const snippetLen = 30 + Math.floor(Math.random() * 70);
+      appendLine(snippet.substr(0, snippetLen));
       snippetIndex = (snippetIndex + 1) % codeSnippets.length;
       linesTyped++;
-      if (linesTyped > 1000) {
-        // Stop after 1000 lines
-        clearInterval(autoTypingInterval);
-        fastAutoTyping = false;
-        appendLine("Auto spam finished. Press any key.");
-      }
       scrollBottom();
-    }, 10); // 10 ms per line - super fast
+      if (linesTyped >= 1000) {
+        clearInterval(autoSpamInterval);
+        autoSpamActive = false;
+        appendLine("Auto spam finished. Press Enter to continue.");
+        setNewInputLine();
+      }
+    }, autoSpamSpeed);
   }
 
-  // Simulate install command output
   function simulateInstall() {
-    appendLine("Installing hackertyper as Chronos file...");
+    appendLine("Starting installation of hackertyper as Chronos file...");
     setTimeout(() => appendLine("Creating Chronos directory..."), 1000);
     setTimeout(() => appendLine("Downloading hackertyper package..."), 2000);
     setTimeout(() => appendLine("Extracting files..."), 3000);
-    setTimeout(() => appendLine("Installation complete! You can now run 'hackertyper'."), 4000);
+    setTimeout(() => appendLine("Setting up environment variables..."), 4000);
+    setTimeout(() => appendLine("Installation complete! You can now run 'hackertyper'."), 5000);
+    setTimeout(() => appendLine("Run 'hackertyper' to start the game."), 5500);
   }
 
-  // Handle user typing normal text before enter
-  function handleNormalTyping(key) {
-    if (key === 'Backspace') {
-      commandBuffer = commandBuffer.slice(0, -1);
-      inputLine.textContent = commandBuffer;
-    } else if (key.length === 1) {
-      commandBuffer += key;
-      inputLine.textContent = commandBuffer;
+  const extraCommands = {
+    help: `
+Available commands:
+start [speed] - Autospam terminal (speed in ms)
+install       - Installs hackertyper (simulated)
+npm start     - Accelerated typing mode
+clear         - Clears terminal screen
+date          - Shows current date/time
+banner        - Shows cool ASCII banner
+hack          - Pretends to hack rapidly
+version       - Shows version info
+echo          - Echoes input text
+exit          - Exits npm start mode
+`,
+
+    clear: function() {
+      terminal.innerHTML = `<div class="line"><span class="prompt">Chronos_>&nbsp;</span><span id="inputLine"></span></div>`;
+      inputLine = document.getElementById('inputLine');
+      terminal.appendChild(cursor);
+      scrollBottom();
+    },
+
+    date: function() {
+      appendLine(new Date().toString());
+    },
+
+    banner: function() {
+      appendLine(`
+  _    _            _                   _____                   
+ | |  | |          | |                 |  __ \\                  
+ | |__| | __ _  ___| | _____ _ __ ___ | |__) |_ _ _ __ ___  ___ 
+ |  __  |/ _\` |/ __| |/ / _ \\ '__/ _ \\|  ___/ _\` | '__/ _ \\/ __|
+ | |  | | (_| | (__|   <  __/ | | (_) | |  | (_| | | |  __/\\__ \\
+ |_|  |_|\\__,_|\\___|_|\\_\\___|_|  \\___/|_|   \\__,_|_|  \\___||___/
+      `);
+    },
+
+    hack: function() {
+      let count = 0;
+      let hackInterval = setInterval(() => {
+        appendLine("Hacking mainframe... access level " + Math.floor(Math.random() * 100) + "%");
+        scrollBottom();
+        count++;
+        if (count > 30) clearInterval(hackInterval);
+      }, 100);
+    },
+
+    version: function() {
+      appendLine("Chronos Hacker Typer v2.6");
+    },
+
+    echo: function(args) {
+      appendLine(args.join(' '));
+    },
+
+    exit: function() {
+      if (fastMode) {
+        fastMode = false;
+        appendLine("Exited npm start fast typing mode.");
+        charIndex = 0;
+        snippetIndex = 0;
+      } else {
+        appendLine("No active fast mode to exit.");
+      }
     }
-  }
+  };
 
-  // Execute command on Enter pressed
-  function handleCommand(command) {
-    appendLine(`<span class="userCommand">${command}</span>`);
-    commandBuffer = '';
-    inputLine.textContent = '';
+  function processCommand(input) {
+    let cmd = input.trim();
+    let cmdParts = cmd.split(/\s+/);
+    let baseCmd = cmdParts[0];
+    let args = cmdParts.slice(1);
 
-    if (command.toLowerCase() === 'start') {
-      startAutoSpam();
-    } else if (command.toLowerCase() === 'install') {
-      simulateInstall();
-    } else {
-      appendLine("Command not found: " + command);
-    }
-  }
+    appendLine(`<span class='userCommand'>${cmd}</span>`);
+    resetInputLine();
 
-  // On keydown events
-  terminal.addEventListener('keydown', (e) => {
-    e.preventDefault();
+    if (cmd === '') return;
 
-    if (fastAutoTyping) {
-      // If auto spam running, ignore typing
+    if (baseCmd === 'start') {
+      let speed = args.length > 0 ? parseInt(args[0]) : 10;
+      if (isNaN(speed) || speed < 1) speed = 10;
+      startAutoSpam(speed);
       return;
     }
 
-    if (e.key === 'Enter') {
-      handleCommand(commandBuffer.trim());
-    } else {
-      handleNormalTyping(e.key);
+    if (baseCmd === 'install') {
+      simulateInstall();
+      return;
     }
 
+    if (baseCmd === 'npm' && args[0] === 'start') {
+      fastMode = true;
+      appendLine("Accelerated npm start mode enabled.");
+      charIndex = 0;
+      snippetIndex = 0;
+      return;
+    }
+
+    if (extraCommands.hasOwnProperty(baseCmd)) {
+      let action = extraCommands[baseCmd];
+      if (typeof action === 'function') {
+        action(args);
+      } else {
+        appendLine(action);
+      }
+      return;
+    }
+
+    // special multi-word command echo
+    if (baseCmd === 'echo') {
+      extraCommands.echo(args);
+      return;
+    }
+
+    if (fastMode) {
+      fastMode = false;
+      appendLine("Exited npm start mode.");
+      charIndex = 0;
+      snippetIndex = 0;
+    }
+
+    appendLine(`Command not found: ${cmd}`);
+  }
+
+  function handleTyping(key) {
+    if (autoSpamActive) {
+      // When spam active, wait for Enter to reset prompt and stop spam
+      if (key === 'Enter') {
+        clearInterval(autoSpamInterval);
+        autoSpamActive = false;
+        appendLine('Auto spam interrupted. Ready for commands.');
+        setNewInputLine();
+      }
+      return;
+    }
+    if (key === 'Backspace') {
+      if (commandBuffer.length > 0) {
+        commandBuffer = commandBuffer.slice(0, -1);
+        inputLine.textContent = commandBuffer;
+      }
+      return;
+    }
+    if (key.length === 1) {
+      commandBuffer += key;
+      inputLine.textContent = commandBuffer;
+      return;
+    }
+  }
+
+  terminal.addEventListener('keydown', e => {
+    e.preventDefault();
+
+    if (e.key === 'Enter') {
+      if (autoSpamActive) {
+        clearInterval(autoSpamInterval);
+        autoSpamActive = false;
+        appendLine('Auto spam interrupted. Ready for commands.');
+        setNewInputLine();
+      } else {
+        processCommand(commandBuffer);
+      }
+      return;
+    }
+
+    if (!fastMode) {
+      typeCodeChars();
+      handleTyping(e.key);
+    } else {
+      typeCodeChars();
+    }
     scrollBottom();
   });
-
 </script>
 </body>
 </html>
