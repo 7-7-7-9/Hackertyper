@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hacker Typer Clone</title>
+<style>
+  /* Terminal style */
+  body {
+    background-color: black;
+    color: #00FF00;
+    font-family: 'Courier New', Courier, monospace;
+    margin: 0;
+    padding: 20px;
+    overflow: hidden;
+  }
+  #terminal {
+    max-width: 900px;
+    height: 95vh;
+    margin: 0 auto;
+    background: black;
+    border: 2px solid #00ff00;
+    padding: 15px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    font-size: 16px;
+    line-height: 1.2;
+    position: relative;
+  }
+  #terminal:focus {
+    outline: none;
+  }
+  /* Blinking cursor */
+  #cursor {
+    display: inline-block;
+    width: 10px;
+    background-color: #00FF00;
+    margin-left: 2px;
+    animation: blink 1s steps(2, start) infinite;
+    vertical-align: bottom;
+    height: 18px;
+  }
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+  /* Pop-up messages */
+  #popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: black;
+    color: red;
+    font-weight: bold;
+    padding: 20px 40px;
+    border: 3px solid red;
+    font-size: 28px;
+    text-align: center;
+    box-shadow: 0 0 15px red;
+    display: none;
+    z-index: 1000;
+    user-select: none;
+  }
+  /* Scrollbar styling */
+  #terminal::-webkit-scrollbar {
+    width: 10px;
+  }
+  #terminal::-webkit-scrollbar-thumb {
+    background-color: #00ff00;
+  }
+</style>
+</head>
+<body>
+  <div id="terminal" tabindex="0"></div>
+  <div id="cursor"></div>
+  <div id="popup"></div>
+
+<script>
+  // Multiple code snippets to simulate hacking code
+  const codeSnippets = [
+    `#include <stdio.h>\nint main() {\n  printf("Hacking started...");\n  return 0;\n}\n// Connecting to server...\nSocket opened.\n`,
+    `function hack() {\n  for(let i=0; i<1000000; i++) {\n    let code = "ACCESS GRANTED";\n  }\n}\nhack();\n// Accessing database...\n`,
+    `sudo apt-get install hackertools\nDownloading exploits...\nExploit launched.\nRoot access obtained.\n`,
+    `var access = false;\ntry {\n  access = true;\n} catch(e) {\n  access = false;\n}\nconsole.log("Access level:", access);\n`,
+    `SELECT * FROM users WHERE password = '123456';\nDROP TABLE secure;\n-- Executing SQL Injection...\nSuccess.\n`
+  ];
+
+  const terminal = document.getElementById('terminal');
+  const popup = document.getElementById('popup');
+  const cursor = document.getElementById('cursor');
+
+  let currentText = '';
+  let snippetIndex = 0;
+  let charIndex = 0;
+
+  // To simulate typing 50x faster, output multiple chars per key press
+  const charsPerKey = 10;
+
+  // Show popup message for 2 seconds
+  function showPopup(message, color) {
+    popup.textContent = message;
+    popup.style.color = color;
+    popup.style.borderColor = color;
+    popup.style.boxShadow = `0 0 15px ${color}`;
+    popup.style.display = 'block';
+    setTimeout(() => {
+      popup.style.display = 'none';
+      terminal.focus();
+    }, 2000);
+  }
+
+  // Append characters from current snippet
+  function typeChars() {
+    if(charIndex < codeSnippets[snippetIndex].length) {
+      let nextChunk = codeSnippets[snippetIndex].substr(charIndex, charsPerKey);
+      currentText += nextChunk;
+      terminal.textContent = currentText;
+      // Append cursor visually
+      terminal.appendChild(cursor);
+      charIndex += charsPerKey;
+      terminal.scrollTop = terminal.scrollHeight;
+    } else {
+      // Move to next snippet cyclically
+      snippetIndex = (snippetIndex + 1) % codeSnippets.length;
+      charIndex = 0;
+    }
+  }
+
+  // Keyboard handler
+  terminal.addEventListener('keydown', e => {
+    e.preventDefault();
+
+    // On three Alt presses in a row, show access popup
+    if(e.key === 'Alt') {
+      altPressCount++;
+      if(altPressCount >= 3) {
+        altPressCount = 0;
+        if(Math.random() < 0.5) {
+          showPopup('ACCESS GRANTED', '#00ff00');
+        } else {
+          showPopup('ACCESS DENIED', '#ff0000');
+        }
+      }
+      return;
+    }
+    // Escape closes popup immediately
+    if(e.key === 'Escape') {
+      popup.style.display = 'none';
+      return;
+    }
+
+    // Reset Alt presses count for other keys
+    altPressCount = 0;
+
+    // Type multiple chars for fast typing effect
+    typeChars();
+  });
+
+  // Initial focus and blinking cursor append
+  terminal.focus();
+  let altPressCount = 0;
+
+  // Keep cursor position after content changes
+  // When window resizes also keep scroll to bottom
+  window.addEventListener('resize', () => {
+    terminal.scrollTop = terminal.scrollHeight;
+  });
+
+</script>
+</body>
+</html>
