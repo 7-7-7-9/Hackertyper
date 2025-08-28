@@ -107,9 +107,12 @@
     </div>
   </div>
 <script>
+// Element references
 const terminal = document.getElementById('terminal');
 const outputDiv = document.getElementById('output');
 const inputField = document.getElementById('inputField');
+
+// Sample code snippets to simulate typing
 const codeSnippets = [
   `#include <stdio.h>\nint main() {\n  printf("Hacking started...");\n  return 0;\n}\n// Connecting to server...\nSocket opened.\n`,
   `function hack() {\n  for(let i=0; i<1000000; i++) {\n    let code = "ACCESS GRANTED";\n  }\n}\nhack();\n// Accessing database...\n`,
@@ -123,27 +126,27 @@ const codeSnippets = [
   `Host 192.168.0.12: Open ports 22, 80, 443\nHost 192.168.0.15: Open ports 21, 8080\nEnumerating services...\n`
 ];
 
-// --- Commands (same as previous enhanced version, for brevity)
+// Extra commands with outputs simulated
 const extraCommands = {
   help: "Available commands:\nstart [speed] - Autospam terminal (speed in ms)\ninstall - Installs hackertyper (simulated)\nnpm start - Accelerated typing mode\nclear - Clears terminal screen\ndate - Shows current date/time\nbanner - Shows cool ASCII banner\nhack - Pretends rapid hacking messages\nversion - Shows version info\necho - Echoes input text\nexit - Exits npm start mode\nscan - Simulates network scan\ntrace - Traces IP addresses\nwifi - Shows fake wifi hacking attempts\nfirewall - Shows firewall activity logs\nvpn - Simulates VPN connection\npayload - Prints payload code\nsocial - Prints social engineering tips\ndecrypt - Pretends to decrypt data\naccesslog - Displays fake access log\ncompile - Pretends to compile code\nmore - Shows more fake tips",
   clear: function() { outputDiv.innerHTML = ""; },
-  date: function() { appendOut(new Date().toString()); },
-  banner: function() { appendOut("   _____ _               _             \n  / ____| |             | |            \n | |    | |__   ___  ___| | _____ _ __ \n | |    | '_ \\ / _ \\/ __| |/ / _ \\ '__|\n | |____| | | |  __/ (__|   <  __/ |   \n  \\_____|_| |_|\\___|\\___|_|\\_\\___|_|   "); },
-  hack: function() { for(let i=0;i<25;i++) appendOut("Hacking mainframe... access level " + Math.floor(Math.random() * 100) + "%"); },
-  version: function() { appendOut("Chronos Hacker Typer Ultimate v3.1"); },
-  echo: function(args) { appendOut(args.join(' ')); },
-  exit: function() { appendOut("Exited npm start fast typing mode."); },
-  scan: function(){appendOut("Scanning network...\nHost 192.168.1.10 - Open ports: 22, 80, 443\nHost 192.168.1.25 - Open ports: 21, 8080\nHost inactive: 192.168.1.45\nScan complete.");},
-  trace: function(){appendOut("Tracing IP...\nTrace route to 8.8.8.8 successful.\nHops: 12\nLatency: 34ms\nTrace finished.");},
-  wifi:function(){appendOut("WiFi hacking attempt...\nCracking WPA2...\nSuccess! Password: hackermode42");},
-  firewall:function(){appendOut("Firewall logs:\nAllowed connections: 120\nBlocked attempts: 45\nAlerts: None.");},
-  vpn:function(){appendOut("VPN connecting...\nConnected to VPN Server #7\nRouting traffic securely.");},
-  payload:function(){appendOut('Payload example:\n<script>evil_code();</script>\nExecute payload carefully.\n');},
-  social:function(){appendOut("Social engineering tips:\n- Always be confident\n- Use fake authority\n- Exploit trust networks");},
-  decrypt:function(){appendOut("Decrypting file...\nPhase 1...Phase 2...Decryption successful.");},
-  accesslog:function(){appendOut("Access logs:\nUser 'admin' logged in at 14:03\nUser 'guest' login failed\nUser 'root' logout at 15:21");},
-  compile:function(){appendOut("Compiling source files...\nBuild succeeded.\nNo errors.");},
-  more:function(){appendOut("Tip: Try using 'hack' or 'scan' or 'vpn' or 'payload'!");}
+  date: function() { appendOutput(new Date().toString()); },
+  banner: function() { appendOutput("   _____ _               _             \n  / ____| |             | |            \n | |    | |__   ___  ___| | _____ _ __ \n | |    | '_ \\ / _ \\/ __| |/ / _ \\ '__|\n | |____| | | |  __/ (__|   <  __/ |   \n  \\_____|_| |_|\\___|\\___|_|\\_\\___|_|   "); },
+  hack: function() { for(let i=0; i<25; i++) appendOutput("Hacking mainframe... access level " + Math.floor(Math.random() * 100) + "%"); },
+  version: function() { appendOutput("Chronos Hacker Typer Ultimate v3.1"); },
+  echo: function(args) { appendOutput(args.join(' ')); },
+  exit: function() { appendOutput("Exited npm start fast typing mode."); },
+  scan: function() { appendOutput("Scanning network...\nHost 192.168.1.10 - Open ports: 22, 80, 443\nHost 192.168.1.25 - Open ports: 21, 8080\nHost inactive: 192.168.1.45\nScan complete."); },
+  trace: function() { appendOutput("Tracing IP...\nTrace route to 8.8.8.8 successful.\nHops: 12\nLatency: 34ms\nTrace finished."); },
+  wifi: function() { appendOutput("WiFi hacking attempt...\nCracking WPA2...\nSuccess! Password: hackermode42"); },
+  firewall: function() { appendOutput("Firewall logs:\nAllowed connections: 120\nBlocked attempts: 45\nAlerts: None."); },
+  vpn: function() { appendOutput("VPN connecting...\nConnected to VPN Server #7\nRouting traffic securely."); },
+  payload: function() { appendOutput('Payload example:\n<script>evil_code();</script>\nExecute payload carefully.\n'); },
+  social: function() { appendOutput("Social engineering tips:\n- Always be confident\n- Use fake authority\n- Exploit trust networks"); },
+  decrypt: function() { appendOutput("Decrypting file...\nPhase 1...Phase 2...Decryption successful."); },
+  accesslog: function() { appendOutput("Access logs:\nUser 'admin' logged in at 14:03\nUser 'guest' login failed\nUser 'root' logout at 15:21"); },
+  compile: function() { appendOutput("Compiling source files...\nBuild succeeded.\nNo errors."); },
+  more: function() { appendOutput("Tip: Try using 'hack' or 'scan' or 'vpn' or 'payload'!"); }
 };
 
 let snippetIndex = 0;
@@ -153,108 +156,125 @@ let autoSpamActive = false;
 let autoSpamInterval = null;
 let autoSpamSpeed = 10;
 
-function appendOut(text) {
+function appendOutput(text) {
   const line = document.createElement('div');
   line.className = 'outLine greenGlow';
+  // Escape < and > to avoid HTML injection
   line.innerHTML = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
   outputDiv.appendChild(line);
   terminal.scrollTop = terminal.scrollHeight;
 }
 
-// Simulates install output
-function simulateInstall() {
-  appendOut("Starting installation of hackertyper as Chronos file...");
-  setTimeout(()=>appendOut("Creating Chronos directory..."),1000);
-  setTimeout(()=>appendOut("Downloading hackertyper package..."),2000);
-  setTimeout(()=>appendOut("Extracting files..."),3000);
-  setTimeout(()=>appendOut("Setting up environment variables..."),4000);
-  setTimeout(()=>appendOut("Installation complete! You can now run 'hackertyper'."),5000);
-  setTimeout(()=>appendOut("Run 'hackertyper' to start the game."),5300);
-}
-
-// Main command handler
+// Command processing function
 function processCommand(input) {
-  let [baseCmd, ...args] = input.trim().split(' ');
   if (!input.trim()) return;
-  appendOut(`<span class='userCommand'>Chronos_> ${input}</span>`);
+  appendOutput(`<span class="userCommand">Chronos_> ${input}</span>`);
+  const [baseCmd, ...args] = input.trim().split(' ');
+  
   if (baseCmd === 'start') {
-    let speed = args.length>0 && !isNaN(parseInt(args)) ? parseInt(args) : 10;
-    startAutoSpam(speed);
+    const speedArg = args.length > 0 && !isNaN(parseInt(args[0])) ? parseInt(args[0]) : 10;
+    startAutoSpam(speedArg);
     return;
   }
-  if (baseCmd === 'install') { simulateInstall(); return; }
-  if (baseCmd === 'npm' && args === 'start') { fastMode=true; appendOut('npm start fast mode enabled.'); return; }
+  if (baseCmd === 'install') {
+    simulateInstall();
+    return;
+  }
+  if (baseCmd === 'npm' && args[0] === 'start') {
+    fastMode = true;
+    appendOutput('npm start fast mode enabled.');
+    return;
+  }
   if (baseCmd in extraCommands) {
-    typeof extraCommands[baseCmd] === 'function'
-      ? extraCommands[baseCmd](args)
-      : appendOut(extraCommands[baseCmd]);
+    if (typeof extraCommands[baseCmd] === 'function') {
+      extraCommands[baseCmd](args);
+    } else {
+      appendOutput(extraCommands[baseCmd]);
+    }
     return;
   }
-  if (baseCmd === 'echo') { extraCommands.echo(args); return; }
-  if (fastMode) { fastMode=false; appendOut("Exited npm start mode."); }
-  appendOut(`Command not found: ${input}`);
+  if (baseCmd === 'echo') {
+    extraCommands.echo(args);
+    return;
+  }
+
+  if (fastMode) {
+    fastMode = false;
+    appendOutput("Exited npm start mode.");
+  }
+  appendOutput(`Command not found: ${input}`);
 }
 
-function startAutoSpam(speed=10){
-  if(autoSpamActive) return;
+function startAutoSpam(speed=10) {
+  if (autoSpamActive) return;
   autoSpamActive = true;
   autoSpamSpeed = speed;
-  appendOut(`Auto spam with speed ${speed}ms/line...`);
+  appendOutput(`Auto spam with speed ${speed}ms/line...`);
   let linesTyped = 0;
-  autoSpamInterval = setInterval(()=>{
+  autoSpamInterval = setInterval(() => {
     let snippet = codeSnippets[snippetIndex];
     let snippetLen = 30 + Math.floor(Math.random() * 70);
-    appendOut(snippet.substr(0,snippetLen));
-    snippetIndex = (snippetIndex+1)%codeSnippets.length;
+    appendOutput(snippet.substr(0, snippetLen));
+    snippetIndex = (snippetIndex + 1) % codeSnippets.length;
     linesTyped++;
     terminal.scrollTop = terminal.scrollHeight;
-    if(linesTyped>=1000){
+    if (linesTyped >= 1000) {
       clearInterval(autoSpamInterval);
-      autoSpamActive=false;
-      appendOut('Auto spam finished. (Press Enter to continue)');
-      inputField.disabled=false; inputField.value=''; inputField.focus();
+      autoSpamActive = false;
+      appendOutput('Auto spam finished. (Press Enter to continue)');
+      inputField.disabled = false;
+      inputField.value = '';
+      inputField.focus();
     }
-  },speed);
-  inputField.disabled=true;
+  }, speed);
+  inputField.disabled = true;
 }
 
-inputField.addEventListener('keydown',function(e){
-  if(!autoSpamActive && fastMode && e.key!=='Enter'){
-    // npm start fast mode: type code on each keypress + allow input!
+// Event listener for input field keydown
+inputField.addEventListener('keydown', (e) => {
+  if (!autoSpamActive && fastMode && e.key !== 'Enter') {
     let snippet = codeSnippets[snippetIndex];
-    let chunk = snippet.substr(charIndex,fastCharsPerKey);
-    appendOut(chunk);
-    charIndex+=fastCharsPerKey;
-    if(charIndex>=snippet.length){charIndex=0;snippetIndex=(snippetIndex+1)%codeSnippets.length;}
+    let fastCharsPerKey = 10;
+    let chunk = snippet.substr(charIndex, fastCharsPerKey);
+    appendOutput(chunk);
+    charIndex += fastCharsPerKey;
+    if (charIndex >= snippet.length) {
+      charIndex = 0;
+      snippetIndex = (snippetIndex + 1) % codeSnippets.length;
+    }
     terminal.scrollTop = terminal.scrollHeight;
   }
-  // Normal input: simulate code (10 chars) on every non-Enter key
-  if(!autoSpamActive && !fastMode && e.key!=='Enter' && e.key.length===1){
+  if (!autoSpamActive && !fastMode && e.key !== 'Enter' && e.key.length === 1) {
     let snippet = codeSnippets[snippetIndex];
-    let chunk = snippet.substr(charIndex,normalCharsPerKey);
-    appendOut(chunk);
-    charIndex+=normalCharsPerKey;
-    if(charIndex>=snippet.length){charIndex=0;snippetIndex=(snippetIndex+1)%codeSnippets.length;}
+    let normalCharsPerKey = 10;
+    let chunk = snippet.substr(charIndex, normalCharsPerKey);
+    appendOutput(chunk);
+    charIndex += normalCharsPerKey;
+    if (charIndex >= snippet.length) {
+      charIndex = 0;
+      snippetIndex = (snippetIndex + 1) % codeSnippets.length;
+    }
     terminal.scrollTop = terminal.scrollHeight;
   }
-  // Enter triggers command if not auto spam
-  if(e.key==='Enter' && !autoSpamActive){
+  
+  if (e.key === 'Enter' && !autoSpamActive) {
     processCommand(inputField.value);
-    inputField.value='';
+    inputField.value = '';
     inputField.focus();
   }
-  // Enter after auto spam finished
-  if(e.key==='Enter' && autoSpamActive){
+  if (e.key === 'Enter' && autoSpamActive) {
     clearInterval(autoSpamInterval);
-    autoSpamActive=false;
-    appendOut('(Ready for new command)');
-    inputField.disabled=false;
-    inputField.value='';
+    autoSpamActive = false;
+    appendOutput('(Ready for new command)');
+    inputField.disabled = false;
+    inputField.value = '';
     inputField.focus();
   }
 });
 
+// Set focus on page load
 inputField.focus();
+
 </script>
 </body>
 </html>
