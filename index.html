@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Chronos Hacker Typer Ultimate</title>
+<title>Chronos Hacker Typer (Working Input)</title>
 <style>
-  /* Base and terminal */
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
   body {
     background: linear-gradient(135deg, #000000 0%, #020202 100%);
@@ -30,7 +29,7 @@
     outline: none;
     position: relative;
   }
-  .line {
+  .line, .outLine {
     margin-bottom: 4px;
     text-shadow: 0 0 8px #00ff00cc;
   }
@@ -39,23 +38,30 @@
     font-weight: bold;
     user-select: none;
   }
-  #inputLine {
-    display: inline;
-    white-space: pre-wrap;
+  #inputWrap {
+    display: flex;
+    align-items: center;
+  }
+  #inputField {
+    background: transparent;
+    border: none;
+    color: #0f0;
+    font: inherit;
+    font-size: inherit;
+    outline: none;
+    width: 80vw;
+    margin-left: 4px;
+    caret-color: #0f0;
   }
   #cursor {
-    display: inline-block;
-    width: 10px;
-    height: 20px;
     background: #0f0;
+    height: 22px;
+    width: 10px;
+    display: inline-block;
     margin-left: 3px;
     animation: blink 1s steps(2, start) infinite;
     vertical-align: bottom;
     box-shadow: 0 0 12px #00ff00aa;
-  }
-  @keyframes blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0; }
   }
   .userCommand {
     color: #66ff66;
@@ -67,15 +73,6 @@
       0 0 10px #00ff00,
       0 0 20px #00ff00cc;
   }
-  /* Flicker background animation for cyberpunk effect */
-  @keyframes flicker {
-    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-      opacity: 1;
-    }
-    20%, 22%, 24%, 55% {
-      opacity: 0.4;
-    }
-  }
   #flickerOverlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -85,353 +82,179 @@
     z-index: 0;
     mix-blend-mode: screen;
   }
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+  @keyframes flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+      opacity: 1;
+    }
+    20%, 22%, 24%, 55% {
+      opacity: 0.4;
+    }
+  }
 </style>
 </head>
 <body>
   <div id="flickerOverlay"></div>
-  <div id="terminal" tabindex="0" aria-label="Terminal window" role="textbox" aria-multiline="true" spellcheck="false">
-    <div class="line"><span class="prompt">Chronos_>&nbsp;</span><span id="inputLine"></span><span id="cursor"></span></div>
+  <div id="terminal" tabindex="0">
+    <div id="output"></div>
+    <div id="inputWrap">
+      <span class="prompt">Chronos_>&nbsp;</span>
+      <input id="inputField" autocomplete="off" autofocus />
+      <span id="cursor"></span>
+    </div>
   </div>
-
 <script>
-  const terminal = document.getElementById('terminal');
-  let inputLine = document.getElementById('inputLine');
-  const cursor = document.getElementById('cursor');
+const terminal = document.getElementById('terminal');
+const outputDiv = document.getElementById('output');
+const inputField = document.getElementById('inputField');
+const codeSnippets = [
+  `#include <stdio.h>\nint main() {\n  printf("Hacking started...");\n  return 0;\n}\n// Connecting to server...\nSocket opened.\n`,
+  `function hack() {\n  for(let i=0; i<1000000; i++) {\n    let code = "ACCESS GRANTED";\n  }\n}\nhack();\n// Accessing database...\n`,
+  `sudo apt-get install hackertools\nDownloading exploits...\nExploit launched.\nRoot access obtained.\n`,
+  `var access = false;\ntry {\n  access = true;\n} catch(e) {\n  access = false;\n}\nconsole.log("Access level:", access);\n`,
+  `SELECT * FROM users WHERE password = '123456';\nDROP TABLE secure;\n-- Executing SQL Injection...\nSuccess.\n`,
+  `DEBUG: Initializing hack algorithm...\nPayload size: 1024 bytes\nInjecting code...\nBypassing firewall...\nConnection established.\n`,
+  `for(i=0;i<100;i++){console.log("Breaching security layer "+i);}\nMemory dump active...\nEncrypting logs...\n`,
+  `[SYSTEM] ERROR 0x004F2B42: Access violation detected at address 0xFF00AB\nRerouting attack vector...\nLaunching Trojan...\n`,
+  `def breach():\n  print("Accessing secure vault...")\n  for i in range(5):\n    print("Bypassing level "+str(i))\n  print("Vault opened!")\n`,
+  `Host 192.168.0.12: Open ports 22, 80, 443\nHost 192.168.0.15: Open ports 21, 8080\nEnumerating services...\n`
+];
 
-  // Extended hacker code snippets array
-  const codeSnippets = [
-    `#include <stdio.h>\nint main() {\n  printf("Hacking started...");\n  return 0;\n}\n// Connecting to server...\nSocket opened.\n`,
-    `function hack() {\n  for(let i=0; i<1000000; i++) {\n    let code = "ACCESS GRANTED";\n  }\n}\nhack();\n// Accessing database...\n`,
-    `sudo apt-get install hackertools\nDownloading exploits...\nExploit launched.\nRoot access obtained.\n`,
-    `var access = false;\ntry {\n  access = true;\n} catch(e) {\n  access = false;\n}\nconsole.log("Access level:", access);\n`,
-    `SELECT * FROM users WHERE password = '123456';\nDROP TABLE secure;\n-- Executing SQL Injection...\nSuccess.\n`,
-    `DEBUG: Initializing hack algorithm...\nPayload size: 1024 bytes\nInjecting code...\nBypassing firewall...\nConnection established.\n`,
-    `for(i=0;i<100;i++){console.log("Breaching security layer "+i);}\nMemory dump active...\nEncrypting logs...\n`,
-    `[SYSTEM] ERROR 0x004F2B42: Access violation detected at address 0xFF00AB\nRerouting attack vector...\nLaunching Trojan...\n`,
-    `def breach():\n  print("Accessing secure vault...")\n  for i in range(5):\n    print("Bypassing level "+str(i))\n  print("Vault opened!")\n`,
-    `# Network Scan Results\nHost 192.168.0.12: Open ports 22, 80, 443\nHost 192.168.0.15: Open ports 21, 8080\nEnumerating services...\n`
-  ];
+// --- Commands (same as previous enhanced version, for brevity)
+const extraCommands = {
+  help: "Available commands:\nstart [speed] - Autospam terminal (speed in ms)\ninstall - Installs hackertyper (simulated)\nnpm start - Accelerated typing mode\nclear - Clears terminal screen\ndate - Shows current date/time\nbanner - Shows cool ASCII banner\nhack - Pretends rapid hacking messages\nversion - Shows version info\necho - Echoes input text\nexit - Exits npm start mode\nscan - Simulates network scan\ntrace - Traces IP addresses\nwifi - Shows fake wifi hacking attempts\nfirewall - Shows firewall activity logs\nvpn - Simulates VPN connection\npayload - Prints payload code\nsocial - Prints social engineering tips\ndecrypt - Pretends to decrypt data\naccesslog - Displays fake access log\ncompile - Pretends to compile code\nmore - Shows more fake tips",
+  clear: function() { outputDiv.innerHTML = ""; },
+  date: function() { appendOut(new Date().toString()); },
+  banner: function() { appendOut("   _____ _               _             \n  / ____| |             | |            \n | |    | |__   ___  ___| | _____ _ __ \n | |    | '_ \\ / _ \\/ __| |/ / _ \\ '__|\n | |____| | | |  __/ (__|   <  __/ |   \n  \\_____|_| |_|\\___|\\___|_|\\_\\___|_|   "); },
+  hack: function() { for(let i=0;i<25;i++) appendOut("Hacking mainframe... access level " + Math.floor(Math.random() * 100) + "%"); },
+  version: function() { appendOut("Chronos Hacker Typer Ultimate v3.1"); },
+  echo: function(args) { appendOut(args.join(' ')); },
+  exit: function() { appendOut("Exited npm start fast typing mode."); },
+  scan: function(){appendOut("Scanning network...\nHost 192.168.1.10 - Open ports: 22, 80, 443\nHost 192.168.1.25 - Open ports: 21, 8080\nHost inactive: 192.168.1.45\nScan complete.");},
+  trace: function(){appendOut("Tracing IP...\nTrace route to 8.8.8.8 successful.\nHops: 12\nLatency: 34ms\nTrace finished.");},
+  wifi:function(){appendOut("WiFi hacking attempt...\nCracking WPA2...\nSuccess! Password: hackermode42");},
+  firewall:function(){appendOut("Firewall logs:\nAllowed connections: 120\nBlocked attempts: 45\nAlerts: None.");},
+  vpn:function(){appendOut("VPN connecting...\nConnected to VPN Server #7\nRouting traffic securely.");},
+  payload:function(){appendOut('Payload example:\n<script>evil_code();</script>\nExecute payload carefully.\n');},
+  social:function(){appendOut("Social engineering tips:\n- Always be confident\n- Use fake authority\n- Exploit trust networks");},
+  decrypt:function(){appendOut("Decrypting file...\nPhase 1...Phase 2...Decryption successful.");},
+  accesslog:function(){appendOut("Access logs:\nUser 'admin' logged in at 14:03\nUser 'guest' login failed\nUser 'root' logout at 15:21");},
+  compile:function(){appendOut("Compiling source files...\nBuild succeeded.\nNo errors.");},
+  more:function(){appendOut("Tip: Try using 'hack' or 'scan' or 'vpn' or 'payload'!");}
+};
 
-  let snippetIndex = 0;
-  let charIndex = 0;
-  let commandBuffer = '';
-  let fastMode = false;
-  let autoSpamActive = false;
-  let autoSpamInterval = null;
-  let autoSpamSpeed = 10;
+let snippetIndex = 0;
+let charIndex = 0;
+let fastMode = false;
+let autoSpamActive = false;
+let autoSpamInterval = null;
+let autoSpamSpeed = 10;
 
-  const normalCharsPerKey = 10;
-  const fastCharsPerKey = 50;
+function appendOut(text) {
+  const line = document.createElement('div');
+  line.className = 'outLine greenGlow';
+  line.innerHTML = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  outputDiv.appendChild(line);
+  terminal.scrollTop = terminal.scrollHeight;
+}
 
-  terminal.focus();
+// Simulates install output
+function simulateInstall() {
+  appendOut("Starting installation of hackertyper as Chronos file...");
+  setTimeout(()=>appendOut("Creating Chronos directory..."),1000);
+  setTimeout(()=>appendOut("Downloading hackertyper package..."),2000);
+  setTimeout(()=>appendOut("Extracting files..."),3000);
+  setTimeout(()=>appendOut("Setting up environment variables..."),4000);
+  setTimeout(()=>appendOut("Installation complete! You can now run 'hackertyper'."),5000);
+  setTimeout(()=>appendOut("Run 'hackertyper' to start the game."),5300);
+}
 
-  function scrollBottom() {
+// Main command handler
+function processCommand(input) {
+  let [baseCmd, ...args] = input.trim().split(' ');
+  if (!input.trim()) return;
+  appendOut(`<span class='userCommand'>Chronos_> ${input}</span>`);
+  if (baseCmd === 'start') {
+    let speed = args.length>0 && !isNaN(parseInt(args)) ? parseInt(args) : 10;
+    startAutoSpam(speed);
+    return;
+  }
+  if (baseCmd === 'install') { simulateInstall(); return; }
+  if (baseCmd === 'npm' && args === 'start') { fastMode=true; appendOut('npm start fast mode enabled.'); return; }
+  if (baseCmd in extraCommands) {
+    typeof extraCommands[baseCmd] === 'function'
+      ? extraCommands[baseCmd](args)
+      : appendOut(extraCommands[baseCmd]);
+    return;
+  }
+  if (baseCmd === 'echo') { extraCommands.echo(args); return; }
+  if (fastMode) { fastMode=false; appendOut("Exited npm start mode."); }
+  appendOut(`Command not found: ${input}`);
+}
+
+function startAutoSpam(speed=10){
+  if(autoSpamActive) return;
+  autoSpamActive = true;
+  autoSpamSpeed = speed;
+  appendOut(`Auto spam with speed ${speed}ms/line...`);
+  let linesTyped = 0;
+  autoSpamInterval = setInterval(()=>{
+    let snippet = codeSnippets[snippetIndex];
+    let snippetLen = 30 + Math.floor(Math.random() * 70);
+    appendOut(snippet.substr(0,snippetLen));
+    snippetIndex = (snippetIndex+1)%codeSnippets.length;
+    linesTyped++;
+    terminal.scrollTop = terminal.scrollHeight;
+    if(linesTyped>=1000){
+      clearInterval(autoSpamInterval);
+      autoSpamActive=false;
+      appendOut('Auto spam finished. (Press Enter to continue)');
+      inputField.disabled=false; inputField.value=''; inputField.focus();
+    }
+  },speed);
+  inputField.disabled=true;
+}
+
+inputField.addEventListener('keydown',function(e){
+  if(!autoSpamActive && fastMode && e.key!=='Enter'){
+    // npm start fast mode: type code on each keypress + allow input!
+    let snippet = codeSnippets[snippetIndex];
+    let chunk = snippet.substr(charIndex,fastCharsPerKey);
+    appendOut(chunk);
+    charIndex+=fastCharsPerKey;
+    if(charIndex>=snippet.length){charIndex=0;snippetIndex=(snippetIndex+1)%codeSnippets.length;}
     terminal.scrollTop = terminal.scrollHeight;
   }
-
-  function appendLine(text = '') {
-    const line = document.createElement('div');
-    line.className = 'line greenGlow';
-    line.innerHTML = `<span class="prompt">Chronos_>&nbsp;</span>${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}`;
-    terminal.appendChild(line);
-    scrollBottom();
+  // Normal input: simulate code (10 chars) on every non-Enter key
+  if(!autoSpamActive && !fastMode && e.key!=='Enter' && e.key.length===1){
+    let snippet = codeSnippets[snippetIndex];
+    let chunk = snippet.substr(charIndex,normalCharsPerKey);
+    appendOut(chunk);
+    charIndex+=normalCharsPerKey;
+    if(charIndex>=snippet.length){charIndex=0;snippetIndex=(snippetIndex+1)%codeSnippets.length;}
+    terminal.scrollTop = terminal.scrollHeight;
   }
-
-  function resetInputLine() {
-    inputLine.textContent = '';
-    commandBuffer = '';
+  // Enter triggers command if not auto spam
+  if(e.key==='Enter' && !autoSpamActive){
+    processCommand(inputField.value);
+    inputField.value='';
+    inputField.focus();
   }
-
-  function setNewInputLine() {
-    if (inputLine.parentNode) {
-      inputLine.parentNode.remove();
-    }
-    const newLine = document.createElement('div');
-    newLine.className = 'line';
-    newLine.innerHTML = '<span class="prompt">Chronos_>&nbsp;</span><span id="inputLine"></span><span id="cursor"></span>';
-    terminal.appendChild(newLine);
-    scrollBottom();
-    inputLine = document.getElementById('inputLine');
-    newLine.appendChild(cursor);
+  // Enter after auto spam finished
+  if(e.key==='Enter' && autoSpamActive){
+    clearInterval(autoSpamInterval);
+    autoSpamActive=false;
+    appendOut('(Ready for new command)');
+    inputField.disabled=false;
+    inputField.value='';
+    inputField.focus();
   }
+});
 
-  function typeCodeChars() {
-    const text = codeSnippets[snippetIndex];
-    const charsPerKey = fastMode ? fastCharsPerKey : normalCharsPerKey;
-
-    if (charIndex < text.length) {
-      const chunk = text.substr(charIndex, charsPerKey);
-      if (inputLine.textContent.length + chunk.length < 80) {
-        inputLine.textContent += chunk;
-      } else {
-        appendLine(inputLine.textContent);
-        setNewInputLine();
-        inputLine.textContent += chunk;
-      }
-      charIndex += chunk.length;
-      scrollBottom();
-    } else {
-      appendLine(inputLine.textContent);
-      setNewInputLine();
-      charIndex = 0;
-      snippetIndex = (snippetIndex + 1) % codeSnippets.length;
-    }
-  }
-
-  function startAutoSpam(speed = 10) {
-    if (autoSpamActive) return;
-    autoSpamActive = true;
-    autoSpamSpeed = speed;
-    let linesTyped = 0;
-    appendLine(`Starting auto spam with speed: ${speed}ms per line...`);
-    setNewInputLine();
-    autoSpamInterval = setInterval(() => {
-      const snippet = codeSnippets[snippetIndex];
-      const snippetLen = 30 + Math.floor(Math.random() * 70);
-      appendLine(snippet.substr(0, snippetLen));
-      snippetIndex = (snippetIndex + 1) % codeSnippets.length;
-      linesTyped++;
-      scrollBottom();
-      if (linesTyped >= 1000) {
-        clearInterval(autoSpamInterval);
-        autoSpamActive = false;
-        appendLine("Auto spam finished. Press Enter to continue.");
-        setNewInputLine();
-      }
-    }, autoSpamSpeed);
-  }
-
-  function simulateInstall() {
-    appendLine("Starting installation of hackertyper as Chronos file...");
-    setTimeout(() => appendLine("Creating Chronos directory..."), 1000);
-    setTimeout(() => appendLine("Downloading hackertyper package..."), 2000);
-    setTimeout(() => appendLine("Extracting files..."), 3000);
-    setTimeout(() => appendLine("Setting up environment variables..."), 4000);
-    setTimeout(() => appendLine("Installation complete! You can now run 'hackertyper'."), 5000);
-    setTimeout(() => appendLine("Run 'hackertyper' to start the game."), 5500);
-  }
-
-  // 20 commands with functions or responses
-  const extraCommands = {
-    help: `
-Available commands:
-start [speed] - Autospam terminal (speed in ms)
-install       - Installs hackertyper (simulated)
-npm start     - Accelerated typing mode
-clear         - Clears terminal screen
-date          - Shows current date/time
-banner        - Shows cool ASCII banner
-hack          - Pretends rapid hacking messages
-version       - Shows version info
-echo          - Echoes input text
-exit          - Exits npm start mode
-scan          - Simulates network scan results
-trace         - Traces IP addresses randomly
-decrypt       - Pretends to decrypt data
-payload       - Prints payload code snippet
-firewall      - Shows firewall activity logs
-accesslog     - Displays fake user access logs
-vpn           - Simulates VPN connect/disconnect
-compile       - Pretends to compile large source code
-social        - Prints social engineering tips
-wifi          - Shows fake wifi hacking attempts
-`,
-
-    clear: function() {
-      terminal.innerHTML = `<div class="line"><span class="prompt">Chronos_>&nbsp;</span><span id="inputLine"></span></div>`;
-      inputLine = document.getElementById('inputLine');
-      terminal.appendChild(cursor);
-      scrollBottom();
-    },
-
-    date: function() {
-      appendLine(new Date().toString());
-    },
-
-    banner: function() {
-      appendLine(`
-   _____ _               _             
-  / ____| |             | |            
- | |    | |__   ___  ___| | _____ _ __ 
- | |    | '_ \\ / _ \\/ __| |/ / _ \\ '__|
- | |____| | | |  __/ (__|   <  __/ |   
-  \\_____|_| |_|\\___|\\___|_|\\_\\___|_|   
-      `);
-    },
-
-    hack: function() {
-      let count = 0;
-      let hackInterval = setInterval(() => {
-        appendLine("Hacking mainframe... access level " + Math.floor(Math.random() * 100) + "%");
-        scrollBottom();
-        count++;
-        if (count > 30) clearInterval(hackInterval);
-      }, 100);
-    },
-
-    version: function() {
-      appendLine("Chronos Hacker Typer Ultimate v3.0");
-    },
-
-    echo: function(args) {
-      appendLine(args.join(' '));
-    },
-
-    exit: function() {
-      if (fastMode) {
-        fastMode = false;
-        appendLine("Exited npm start fast typing mode.");
-        charIndex = 0;
-        snippetIndex = 0;
-      } else {
-        appendLine("No active fast mode to exit.");
-      }
-    },
-
-    scan: function() {
-      appendLine("Scanning network...\nHost 192.168.1.10 - Open ports: 22, 80, 443\nHost 192.168.1.25 - Open ports: 21, 8080\nHost inactive: 192.168.1.45\nScan complete.");
-    },
-
-    trace: function() {
-      appendLine("Tracing IP...\nTrace route to 8.8.8.8 successful.\nHops: 12\nLatency: 34ms\nTrace finished.");
-    },
-
-    decrypt: function() {
-      appendLine("Decrypting file...\nPhase 1 complete.\nPhase 2 complete.\nDecryption successful.");
-    },
-
-    payload: function() {
-      appendLine(`Payload example:\n<script>evil_code();</script>\nExecute payload carefuly.\n`);
-    },
-
-    firewall: function() {
-      appendLine("Firewall logs:\nAllowed connections: 120\nBlocked attempts: 45\nAlerts: None.");
-    },
-
-    accesslog: function() {
-      appendLine("Access logs:\nUser 'admin' logged in at 14:03\nUser 'guest' login failed\nUser 'root' logout at 15:21");
-    },
-
-    vpn: function() {
-      appendLine("VPN connecting...\nConnected to VPN Server #7\nRouting traffic securely.");
-    },
-
-    compile: function() {
-      appendLine("Compiling source files...\nBuild succeeded.\nNo errors.");
-    },
-
-    social: function() {
-      appendLine("Social engineering tips:\n- Always be confident\n- Use fake authority\n- Exploit trust networks");
-    },
-
-    wifi: function() {
-      appendLine("WiFi hacking attempts:\nCracking WPA2...\nSuccess! Password: hackermode42");
-    }
-  };
-
-  function processCommand(input) {
-    let cmd = input.trim();
-    let cmdParts = cmd.split(/\s+/);
-    let baseCmd = cmdParts[0];
-    let args = cmdParts.slice(1);
-
-    appendLine(`<span class='userCommand'>${cmd}</span>`);
-    resetInputLine();
-
-    if (cmd === '') return;
-
-    if (baseCmd === 'start') {
-      let speed = args.length > 0 ? parseInt(args[0]) : 10;
-      if (isNaN(speed) || speed < 1) speed = 10;
-      startAutoSpam(speed);
-      return;
-    }
-
-    if (baseCmd === 'install') {
-      simulateInstall();
-      return;
-    }
-
-    if (baseCmd === 'npm' && args[0] === 'start') {
-      fastMode = true;
-      appendLine("Accelerated npm start mode enabled.");
-      charIndex = 0;
-      snippetIndex = 0;
-      return;
-    }
-
-    if (extraCommands.hasOwnProperty(baseCmd)) {
-      const action = extraCommands[baseCmd];
-      if (typeof action === 'function') {
-        action(args);
-      } else {
-        appendLine(action);
-      }
-      return;
-    }
-
-    if (baseCmd === 'echo') {
-      extraCommands.echo(args);
-      return;
-    }
-
-    if (fastMode) {
-      fastMode = false;
-      appendLine("Exited npm start mode.");
-      charIndex = 0;
-      snippetIndex = 0;
-    }
-
-    appendLine(`Command not found: ${cmd}`);
-  }
-
-  function handleTyping(key) {
-    if (autoSpamActive) {
-      if (key === 'Enter') {
-        clearInterval(autoSpamInterval);
-        autoSpamActive = false;
-        appendLine('Auto spam interrupted. Ready for commands.');
-        setNewInputLine();
-      }
-      return;
-    }
-    if (key === 'Backspace') {
-      if (commandBuffer.length > 0) {
-        commandBuffer = commandBuffer.slice(0, -1);
-        inputLine.textContent = commandBuffer;
-      }
-      return;
-    }
-    if (key.length === 1) {
-      commandBuffer += key;
-      inputLine.textContent = commandBuffer;
-      return;
-    }
-  }
-
-  terminal.addEventListener('keydown', e => {
-    e.preventDefault();
-
-    if (e.key === 'Enter') {
-      if (autoSpamActive) {
-        clearInterval(autoSpamInterval);
-        autoSpamActive = false;
-        appendLine('Auto spam interrupted. Ready for commands.');
-        setNewInputLine();
-      } else {
-        processCommand(commandBuffer);
-      }
-      return;
-    }
-
-    if (!fastMode) {
-      typeCodeChars();
-      handleTyping(e.key);
-    } else {
-      typeCodeChars();
-    }
-    scrollBottom();
-  });
+inputField.focus();
 </script>
 </body>
 </html>
